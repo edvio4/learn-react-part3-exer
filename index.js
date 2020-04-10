@@ -17,6 +17,17 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
     }
 ));
 
+const errorHandling = (error, request, response, next) => {
+    console.log(JSON.stringify(error))
+    if (error.name === "ValidationError") {
+        return response.status(400).json({ error: error.errors.name.message });
+    } else if (error.code === 11000) {
+        return response.status(400).json({ error: error.errmsg });
+    }
+
+    next(error);
+}
+
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method);
     console.log('Path:  ', request.path);
@@ -74,6 +85,8 @@ app.post('/api/persons', (request, response, next) => {
         .catch(next);
 });
 
+app.use(errorHandling);
+
 app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body;
 
@@ -90,6 +103,7 @@ app.put('/api/persons/:id', (request, response, next) => {
 
 });
 
+app.use(errorHandling);
 
 app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndDelete(request.params.id)
