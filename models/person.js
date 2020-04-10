@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
+mongoose.set('useFindAndModify', false);
 const url = process.env.MONGODB_URI;
-console.log(url)
 
 const personSchema = new mongoose.Schema({
     name: String,

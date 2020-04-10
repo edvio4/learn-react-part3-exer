@@ -27,29 +27,33 @@ const requestLogger = (request, response, next) => {
 
 app.use(requestLogger);
 
-app.get('/api/info', (request, response) => {
+app.get('/api/info', (request, response, next) => {
     Person.find({}).then(people => {
         response.send(`
             <div>Phonebook has info for ${people.length} people</div>
             <br>
             <div>${new Date()}</div>`);
-    });
+        })
+        .catch(next);
 });
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(people => {
-        response.json(people);
-    });
+app.get('/api/persons', (request, response, next) => {
+    Person.find({})
+        .then(people => {
+            response.json(people);
+        })
+        .catch(next);
 });
 
-app.get('/api/persons/:id', (request, response) => {
+app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
         .then(person => {
             response.json(person);
-        });
+        })
+        .catch(next);
 });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body;
 
     if (!body.name || !body.number) {
@@ -57,13 +61,6 @@ app.post('/api/persons', (request, response) => {
             error: 'content missing'
         });
     }
-
-    // const match = persons.find(person => person.name === body.name);
-    // if (match) {
-    //     return response.status(400).json({
-    //         error: 'name already exists'
-    //     });
-    // }
 
     const person = new Person({
         name: body.name,
@@ -73,14 +70,31 @@ app.post('/api/persons', (request, response) => {
     person.save()
         .then(savedPerson => {
             response.json(savedPerson);
-        });
+        })
+        .catch(next);
 });
 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id);
-    persons = persons.filter(person => person.id !== id);
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body;
 
-    response.status(204).end();
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(request.params.id, person, {new: true})
+        .then(updatedPerson => {
+            response.json(updatedPerson);
+        })
+        .catch(next);
+
+});
+
+
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndDelete(request.params.id)
+        .then(() => response.status(204).end())
+        .catch(next);
 });
 
 const unknownEndpoint = (request, response) => {
