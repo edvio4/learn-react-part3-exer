@@ -13,20 +13,18 @@ app.use(express.static('build'));
 morgan.token('body', (request) => JSON.stringify(request.body));
 
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body', {
-        skip: (request) => request.method !== 'POST'
-    }
-));
+    skip: (request) => request.method !== 'POST'
+}));
 
 const errorHandling = (error, request, response, next) => {
-    console.log(JSON.stringify(error))
-    if (error.name === "ValidationError") {
+    if (error.name === 'ValidationError') {
         return response.status(400).json({ error: error.errors.name.message });
     } else if (error.code === 11000) {
         return response.status(400).json({ error: error.errmsg });
     }
 
     next(error);
-}
+};
 
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method);
@@ -34,13 +32,14 @@ const requestLogger = (request, response, next) => {
     console.log('Body:  ', request.body);
     console.log('---');
     next();
-}
+};
 
 app.use(requestLogger);
 
 app.get('/api/info', (request, response, next) => {
-    Person.find({}).then(people => {
-        response.send(`
+    Person.find({})
+        .then(people => {
+            response.send(`
             <div>Phonebook has info for ${people.length} people</div>
             <br>
             <div>${new Date()}</div>`);
@@ -93,7 +92,7 @@ app.put('/api/persons/:id', (request, response, next) => {
     const person = {
         name: body.name,
         number: body.number
-    }
+    };
 
     Person.findByIdAndUpdate(request.params.id, person, {new: true})
         .then(updatedPerson => {
@@ -113,7 +112,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' });
-}
+};
 
 app.use(unknownEndpoint);
 

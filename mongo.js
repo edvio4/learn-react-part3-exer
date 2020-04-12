@@ -27,7 +27,7 @@ if (!name || !number) {
     Person.find({}).then(result => {
         result.forEach(person => {
             console.log(person);
-        })
+        });
         mongoose.connection.close();
     });
 } else {
